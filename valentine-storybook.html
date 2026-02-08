@@ -93,9 +93,99 @@ h1 {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.love-btn {
+  font-family: 'Great Vibes', cursive;
+  font-size: 1.9rem;
+  padding: 12px 20px;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* common glow */
+.love-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(255,255,255,0.6), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.love-btn:hover::before {
+  opacity: 1;
+}
+
+/* FOREVER */
+.forever {
+  background: linear-gradient(135deg, #ff5f9e, #ff8fb1);
+  color: white;
+  box-shadow: 0 10px 25px rgba(255,95,158,0.5);
+}
+
+.forever:hover {
+  transform: scale(1.08);
+}
+
+/* ALWAYS */
+.always {
+  background: linear-gradient(135deg, #ffb347, #ffcc33);
+  color: #5a2a00;
+  box-shadow: 0 10px 25px rgba(255,179,71,0.5);
+}
+
+.always:hover {
+  transform: scale(1.08);
+}
+
+/* INFINITY */
+.infinity {
+  background: linear-gradient(135deg, #7f7fd5, #91eae4);
+  color: #fff;
+  box-shadow: 0 10px 25px rgba(127,127,213,0.6);
+}
+
+.infinity:hover {
+  transform: scale(1.08);
+}
+
+/* click ripple */
+.love-btn:active {
+  transform: scale(0.95);
+}
+
 </style>
 </head>
 <body>
+
+  <div id="audioOverlay" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+  font-family:'Great Vibes',cursive;
+  font-size:2.2rem;
+  cursor:pointer;
+">
+  Tap to begin our story 🎵❤️
+</div>
+
 
 <div class="book">
   <div class="page left">
@@ -114,23 +204,139 @@ h1 {
   <div class="page right">
     <div class="slideshow">
       <!-- Replace these with your own photos -->
-      <img src="1.jpg" class="active" />
-      <img src="2.jpg" />
-      <!-- <img src="C:\Users\Spoorthi\OneDrive\Pictures\Spoorthi\IMG_20200202_130658.jpg" /> -->
-      <!-- <img src="C:\Users\Spoorthi\OneDrive\Pictures\Spoorthi\1567239485503.jpg" /> -->
+       <img src="photo14.jpg" class="active" />
+      <img src="photo13.jpg" />
+      <img src="photo12.jpg" />
+      <img src="photo11.jpg" />
+      <img src="photo10.jpg" />
+      <img src="photo9.jpg"  />
+      <img src="photo8.jpg"  />
+      <img src="photo7.jpg"  />
+      <img src="photo6.jpg"  />
+      <img src="photo5.jpg"  />
+      <img src="photo4.jpg"  />
+      <img src="photo3.jpg"  />
+      <img src="photo1.jpg"  />
+    </div>
+      <div style="text-align:center; margin-top:20px;">
+      <button id="fireBtn" style="display:none;padding:12px 28px;border:none;border-radius:25px;background:#ff4f7a;color:white;font-size:1rem;cursor:pointer;">Celebrate Our Love 🎆</button>
     </div>
   </div>
 </div>
 
+<canvas id="fireworks" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none;"></canvas>
+
+<!-- Music -->
+<audio id="bgMusic" loop>
+  <source src="C:\Users\Spoorthi\Downloads\ed-sheeran-perfect.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Proposal Popup -->
+<div id="proposal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10;align-items:center;justify-content:center;">
+  <div style="background:#fffafc;padding:30px;border-radius:20px;text-align:center;max-width:320px;animation:fadeIn 1s;">
+    <h2 style="font-family:'Great Vibes',cursive;color:#ff4f7a;font-size:2.5rem;">“This is our story…
+still being written,
+still growing,
+still choosing each other — every single day.”
+
+<br>
+
+“Will you marry me again?” 💍</h2>
+    <div class="choices">
+  <button class="love-btn forever" onclick="choose('Forever')">Forever</button>
+  <button class="love-btn always" onclick="choose('Always')">Always</button>
+  <button class="love-btn infinity" onclick="choose('Infinity')">Infinity</button>
+</div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div style="position:fixed;bottom:20px;right:20px;display:flex;gap:10px;z-index:11;">
+  <button onclick="toggleMusic()">🎵</button>
+  <button onclick="toggleNight()">🕯</button>
+  <button onclick="openProposal()">💍</button>
+</div>
+
 <script>
-// slideshow
+const music1 = document.getElementById('bgMusic');
+const overlay = document.getElementById('audioOverlay');
+
+// try autoplay on load
+window.addEventListener('load', () => {
+  music1.play().then(() => {
+    overlay.style.display = 'none';
+  }).catch(() => {
+    overlay.style.display = 'flex';
+  });
+});
+
+// user gesture fallback
+overlay.addEventListener('click', () => {
+  music1.play();
+  overlay.style.display = 'none';
+
+  // slideshow
 const slides = document.querySelectorAll('.slideshow img');
 let index = 0;
 setInterval(() => {
   slides[index].classList.remove('active');
   index = (index + 1) % slides.length;
   slides[index].classList.add('active');
-}, 3500);
+
+  var content = '';
+  if(index+1 === 2){
+    content = `“Before the vows, before forever…
+there was us, dreaming of a lifetime together.” 💍`;
+  }
+else if(index+1 === 3){
+  content = `“New places, new beginnings,
+and countless memories made hand in hand.” ✨`;
+} else if(index+1 === 4){
+  content = `“Two hearts, one promise,
+walking the same path — always.” ❤️`;
+}
+else if(index+1 === 5){
+  content = `“Tiny smiles, endless love…
+our hearts learned a new meaning of joy.” 👶💖`;
+}
+else if(index+1 === 6){
+  content = `“Every outing with you feels special,
+because together is my favorite place.” 🌍`;
+}
+else if(index+1 === 7){
+content = `“Simple days, quiet nights,
+and a love that needs nothing more.” 🕊️`;
+}
+else if(index+1 === 8){
+content = `“New wheels, new journeys,
+but the best part was always you beside me.” 🚗💫`;
+}
+else if(index+1 === 9){
+content = `“Our first Valentine’s Day…
+a small celebration of a very big love.” 💌`;
+}
+else if(index+1 === 10){
+content = `“Miles away from home,
+yet closer than ever — exploring the world together.” ✈️❤️`;
+}
+else if(index+1 === 11){
+content = `“Golden sunsets, ancient streets,
+and memories we’ll carry forever.” 🌅`;
+}
+else if(index+1 === 12){
+content = `“With love growing within,
+our hearts made space for a miracle.” 🤍✨`;
+}
+else if(index+1 === 13){
+content = `“And then… you became a mother,
+and I fell in love all over again.” 🍼❤️`;
+}
+
+  document.getElementsByClassName("story")[0].textContent = content;
+}, 1000);
+
+});
+
 
 // floating hearts
 setInterval(() => {
@@ -144,8 +350,65 @@ setInterval(() => {
 }, 500);
 
 // notification webhook (replace URL)
-fetch('https://YOUR-WEBHOOK-URL', {
-  method: 'POST'
+// fetch('https://YOUR-WEBHOOK-URL', { method: 'POST' });
+
+// fireworks animation
+const canvas = document.getElementById('fireworks');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+let particles = [];
+
+function explode(x, y) {
+  for (let i = 0; i < 80; i++) {
+    particles.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 6,
+      vy: (Math.random() - 0.5) * 6,
+      life: 80
+    });
+  }
+}
+
+function animateFireworks() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach((p, i) => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life--;
+    ctx.fillStyle = 'rgba(255,79,122,0.8)';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+    ctx.fill();
+    if (p.life <= 0) particles.splice(i, 1);
+  });
+  requestAnimationFrame(animateFireworks);
+}
+
+animateFireworks();
+
+// music
+const music = document.getElementById('bgMusic');
+function toggleMusic(){ music.paused ? music.play() : music.pause(); }
+
+// proposal
+function openProposal(){ document.getElementById('proposal').style.display='flex'; }
+function choose(answer){
+  document.getElementById('proposal').innerHTML = `<div style="background:#fffafc;padding:30px;border-radius:20px;text-align:center;"><h2 style="font-family:'Great Vibes',cursive;color:#ff4f7a;">${answer} ❤️</h2><p>I knew it 🥹</p></div>`;
+  for(let i=0;i<7;i++) explode(Math.random()*canvas.width, canvas.height/3);
+}
+
+// night mode
+let night=false;
+function toggleNight(){
+  night=!night;
+  document.body.style.background = night ? 'linear-gradient(135deg,#1a1a2e,#16213e)' : 'linear-gradient(135deg,#ff758c,#ff7eb3)';
+}
+
+document.getElementById('fireBtn').addEventListener('click', () => {
+  for (let i = 0; i < 5; i++) {
+    explode(Math.random() * canvas.width, Math.random() * canvas.height / 2);
+  }
 });
 </script>
 
